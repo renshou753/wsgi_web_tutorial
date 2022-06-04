@@ -1,0 +1,7 @@
+site_name: 从0动手做Python Web框架
+site_url: https://renshou753.github.io/wsgi_web
+nav:
+  - 介绍: intro.md
+  - Python Web框架: python_web.md
+  - Home: index.md
+theme: readthedocs
