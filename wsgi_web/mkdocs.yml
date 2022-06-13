@@ -3,5 +3,7 @@ site_url: https://renshou753.github.io/wsgi_web
 nav:
   - 介绍: intro.md
   - Python Web框架: python_web.md
+  - Hello WSGI: hello.md
+  - Reference: reference.md
   - Home: index.md
 theme: readthedocs
