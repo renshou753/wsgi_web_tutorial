@@ -4,6 +4,7 @@ nav:
   - 介绍: intro.md
   - Python Web框架: python_web.md
   - Hello WSGI: hello.md
+  - WSGI中间件: middleware.md
+  - 路由: route.md
   - Reference: reference.md
-  - Home: index.md
 theme: readthedocs
