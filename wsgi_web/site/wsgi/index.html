@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://renshou753.github.io/wsgi_web/wsgi/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>框架 - 从0理解Python Web框架</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "\u6846\u67b6";
+        var mkdocs_page_input_path = "wsgi.md";
+        var mkdocs_page_url = "/wsgi_web/wsgi/";
+      </script>
+    
+    <script src="../js/jquery-3.6.0.min.js" defer></script>
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
+      <script>hljs.initHighlightingOnLoad();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> 从0理解Python Web框架
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../intro/">介绍</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../python_web/">Python Web</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../hello/">Hello WSGI</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../middleware/">WSGI中间件</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../route/">路由</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="./">框架</a>
+    <ul class="current">
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../next/">下一步</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../reference/">Reference</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">从0理解Python Web框架</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" alt="Docs"></a> &raquo;</li><li>框架</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="_1">框架</h1>
+<p>成熟的 web 框架还需要下面几部分。</p>
+<p>1 对 environ 做一些预处理，把 request 暴露出来供应用开发者调用。在一部分 wsgi 框架中 request 被直接注入到路由函数当中。</p>
+<pre><code class="language-python">from django.http import HttpResponse
+
+def index(request):
+    return HttpResponse(&quot;Hello, world.&quot;)
+</code></pre>
+<p>而像 flask 和 bottle 类似的框架，request 是一个线程安全的全局变量，需要主动引入。</p>
+<pre><code class="language-python">from flask import request
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        do_the_login()
+    else:
+        show_the_login_form()
+</code></pre>
+<p>2 对 response 对象做一些封装以方便应用端返回结果，WSGI 服务端要求每次返回结果时一定要调用服务端发来的 start_response 对象。这很麻烦，框架可以实现一些封装，把这部分逻辑隐藏掉，比如 flaks 提供了一个 Response 对象。</p>
+<pre><code class="language-python">def index():
+   response = Response(&quot;Unicorns are OK&quot;)
+   response.headers['X-Parachutes'] = 'parachutes are cool'
+   response.set_cookie('username', 'the username')
+   return response
+</code></pre>
+<p>3 提供更方便的路由处理方法，框架需要处理浏览器发来的查询参数，比如 http://localhost:8080/orders?confirmed=true&amp;processor=tony. 框架需要很方便地让应用开发者查询的到 confirmed 参数和 processor 参数是什么。</p>
+<p>4 cookie，session 处理能力。</p>
+<p>5 某些框架还提供了 html template 的功能，比如 flask 里集成的 jinja。在前后分离的 web 开发浪潮中 template 不是后端框架必须提供的。</p>
+<p>6 还可以添加 orm 抽象层去处理数据库增删改查，比如 Django ORM。</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../route/" class="btn btn-neutral float-left" title="路由"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../next/" class="btn btn-neutral float-right" title="下一步">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../route/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../next/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme_extra.js" defer></script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
+
+</body>
+</html>
